@@ -1,0 +1,10 @@
+#!/bin/bash
+
+PROJECT_ROOT="$(cd "$(dirname "$0")"; cd ..; pwd)"
+source ${PROJECT_ROOT}/config.sh
+
+docker run --privileged --rm -it \
+    -p 8888:8888 \
+    --name $CONTAINER_NAME \
+    -v ${PROJECT_ROOT}/workshops:/workshops/ \
+    ${DOCKER_IMAGE_NAME}
