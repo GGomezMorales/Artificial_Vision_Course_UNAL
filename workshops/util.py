@@ -47,6 +47,31 @@ def image_show(
     except Exception as e:
         print(f'Error: {e}')
 
+def subplot_images(title: str = '', images: list = [], images_name: list = [], figsize: tuple = (15, 7)) -> None:
+    try:
+        fig, axes = plt.subplots(1, len(images), figsize = figsize)
+        fig.suptitle(title, fontsize = 20)
+        for ax, image, name in zip(axes, images, images_name):
+            ax.set_title(name)
+            ax.imshow(image, cmap='gray')
+        plt.show()
+    except Exception as e:
+        print(f'Error: {e}')
+
+def plot_image_and_histogram(image: np.ndarray, title: str = '', image_title: str = '', hist_title: str = '', figsize=(15, 4)) -> None:
+    fig, axs = plt.subplots(1, 2, figsize=figsize)
+    fig.suptitle(title, fontsize = 20)
+    colors = ('r', 'g', 'b')
+    axs[0].set_title(image_title)
+    axs[0].imshow(image, cmap='gray')
+
+    axs[1].set_title(hist_title)
+    for i, col in enumerate(colors):
+        img_array_i = image[:,:,i].ravel()
+        axs[1].hist(img_array_i,histtype='step', bins=255,  range=(0.0, 255.0),density=True, color=colors[i])
+    plt.show()
+
+
 def plot_channels(
         image: np.ndarray,
         mode = 'rbg',
@@ -152,3 +177,18 @@ def plot_channels(
     except Exception as e:
         print(f'Error: {e}')
 
+def apply_transformation_on_rgb(image: np.ndarray, transformation: callable, args: list) -> np.ndarray:
+    try:
+        image_transformated = np.zeros(image.shape, np.uint8)
+        for i in range(3):
+            image_transformated[:,:,i] = transformation(image[:,:,i], *args)
+        return image_transformated
+    except Exception as e:  
+        print(f'Error: {e}')
+
+def gamma_correction(image: np.ndarray, a: int, gamma: float) -> np.ndarray:
+    try:
+        image_result = cv2.multiply(cv2.pow(image.copy().astype(np.float32) / 255.0, gamma), a)
+        return np.clip(image_result * 255.0, 0, 255).astype(np.uint8)
+    except Exception as e: 
+        print(f'Error: {e}')
