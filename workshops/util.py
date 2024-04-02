@@ -265,6 +265,75 @@ def translation_transformation(image: np.ndarray, dx: int, dy: int) -> np.ndarra
     except Exception as e:
         print(f'Error: {e}')
 
+def reflection_transformation(
+        image: np.ndarray,
+        mode: str
+    ) -> np.ndarray:
+    try:
+        size = np.shape(image)
+        if mode == 'x':
+            reflection_matrix = np.float32(
+                [[-1, 0, size[1]],
+                [0, 1, 0]]
+            )
+        elif mode == 'y':
+            reflection_matrix = np.float32(
+                [[1, 0, 0],
+                [0, -1, size[0]]
+            ])
+        elif mode == 'xy':
+            reflection_matrix = np.float32(
+                [[-1, 0, size[1]],
+                [0, -1, size[0]]
+            ])
+        else:
+            raise ValueError(f'Invalid mode. Use "x", "y" or "xy".')
+        return cv2.warpAffine(image.copy(), reflection_matrix, (size[1], size[0]))
+    except Exception as e:
+        print(f'Error: {e}')
+
+def rotation_transformation(
+        image: np.ndarray, 
+        angle: float
+        ) -> np.ndarray:
+    try:
+        size = np.shape(image)
+        rotation_matrix = cv2.getRotationMatrix2D((size[1] / 2, size[0] / 2), angle, 1)
+        return cv2.warpAffine(image.copy(), rotation_matrix, (size[1], size[0]))
+    except Exception as e:
+        print(f'Error: {e}')
+
+def inclination_transformation(
+        image: np.ndarray, 
+        incl_x: float, 
+        incl_y: float) -> np.ndarray:
+    try:
+        size = np.shape(image)
+        inclination_matrix = np.float32(
+            [[1, incl_x, 0],
+            [incl_y, 1, 0]]
+        )
+        return cv2.warpAffine(image.copy(), inclination_matrix, (size[1], size[0]))
+    except Exception as e:
+        print(f'Error: {e}')
+
+def scaling_transformation(
+        image: np.ndarray,
+        method: str,
+        scale_x: float,
+        scale_y: float
+    ) -> np.ndarray:
+    try:
+        if method == 'nearest':
+            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_NEAREST)
+        elif method == 'bilinear':
+            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR)
+        elif method == 'bicubic':
+            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_CUBIC)
+        else:
+            raise ValueError(f'Invalid method. Use "nearest", "bilinear" or "bicubic".')
+    except Exception as e:
+        print(f'Error: {e}')
 
 #  -------------------- IMAGE TRANSFORMATIONS --------------------
         
