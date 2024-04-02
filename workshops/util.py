@@ -387,3 +387,68 @@ def gamma_correction(
         return np.clip(image_result * 255.0, 0, 255).astype(np.uint8)
     except Exception as e:
         print(f'Error: {e}')
+
+#  -------------------- IMAGE FILTERS --------------------
+
+
+def apply_filter(
+    image: np.ndarray,
+    kernel: np.ndarray,
+    border_type: int = cv2.BORDER_CONSTANT
+) -> np.ndarray:
+    try:
+        return cv2.filter2D(image.copy(), -1, kernel, borderType=border_type)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def gaussian_kernel(
+    size: int,
+    sigma: float
+) -> np.ndarray:
+    try:
+        kernel = np.fromfunction(
+            lambda x, y: (1 / (2 * np.pi * sigma ** 2)) * np.exp(-((x - size // 2) ** 2 + (y - size // 2) ** 2) / (2 * sigma ** 2)),
+            (size, size)
+        )
+        return kernel / np.sum(kernel)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def box_kernel(
+    size: int
+) -> [int, np.ndarray]: # type: ignore
+    try:
+        return (size // 2, np.ones((size, size), np.float64) / (size ** 2))
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+#  -------------------- BORDER TYPES --------------------
+
+
+def border_image(
+    image: np.ndarray,
+    upper: int,
+    lower: int,
+    left: int,
+    right: int,
+    border_type: str ='constant'
+) -> np.ndarray:
+    try:
+        if border_type == 'constant':
+            return cv2.copyMakeBorder(image.copy(), upper, lower, left, right, cv2.BORDER_CONSTANT, value=0)
+        elif border_type == 'replicate':
+            return cv2.copyMakeBorder(image.copy(), upper, lower, left, right, cv2.BORDER_REPLICATE)
+        elif border_type == 'reflect':
+            return cv2.copyMakeBorder(image.copy(), upper, lower, left, right, cv2.BORDER_REFLECT)
+        elif border_type == 'reflect101':
+            return cv2.copyMakeBorder(image.copy(), upper, lower, left, right, cv2.BORDER_REFLECT_101)
+        elif border_type == 'wrap':
+            return cv2.copyMakeBorder(image.copy(), upper, lower, left, right, cv2.BORDER_WRAP)
+        else:
+            raise ValueError(
+                f'Invalid border type. Use "constant", "replicate", "reflect", "reflect101" or "wrap".')
+    except Exception as e:
+        print(f'Error: {e}')
