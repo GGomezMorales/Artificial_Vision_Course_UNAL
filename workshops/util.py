@@ -252,6 +252,20 @@ def negative_transformation(image: np.ndarray) -> np.ndarray:
     except Exception as e:
         print(f'Error: {e}')
 
+# -------------------- GEOMETRIC TRANSFORMATIONS --------------------
+
+def translation_transformation(image: np.ndarray, dx: int, dy: int) -> np.ndarray:
+    try:
+        size = np.shape(image)
+        translation_matrix = np.float32(
+            [[1, 0, dx],
+            [0, 1, dy]]
+        )
+        return cv2.warpAffine(image.copy(), translation_matrix, (size[1], size[0]))
+    except Exception as e:
+        print(f'Error: {e}')
+
+
 #  -------------------- IMAGE TRANSFORMATIONS --------------------
         
 def apply_transformation_on_rgb(
