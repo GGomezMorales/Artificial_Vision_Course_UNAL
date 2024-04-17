@@ -425,6 +425,16 @@ def box_kernel(
         print(f'Error: {e}')
 
 
+def blur_filter(
+    image: np.ndarray,
+    size: int,
+) -> np.ndarray:
+    try:
+        return cv2.blur(image.copy(), (size, size), borderType=cv2.BORDER_REPLICATE)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
 #  -------------------- BORDER TYPES --------------------
 
 
@@ -452,3 +462,58 @@ def border_image(
                 f'Invalid border type. Use "constant", "replicate", "reflect", "reflect101" or "wrap".')
     except Exception as e:
         print(f'Error: {e}')
+
+#  ------------------------- NOISE -------------------------
+
+
+def add_gaussian_noise(
+    image: np.ndarray,
+    mean: float = 0.0,
+    std: float = 1.0 
+) -> np.ndarray:
+    try:
+        noise = np.random.normal(mean, std, image.shape)
+        return np.clip(image.copy() + noise, 0, 255).astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def add_poison_noise(
+    image: np.ndarray,
+) -> np.ndarray:
+    try:
+        return np.clip(np.random.poisson(image.copy()), 0, 255).astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def add_salt_and_pepper_noise(
+    image: np.ndarray,
+    amount: float = 0.05
+) -> np.ndarray:
+    try:
+        image_noise = image.copy()
+        if len(image.shape) == 2:
+            black = 0
+            white = 255
+        else:
+            black = np.array([0, 0, 0], dtype=image.dtype)
+            white = np.array([255, 255, 255], dtype=image.dtype)
+        prob = np.random.random(image_noise.shape[:2])
+        image_noise[prob < amount / 2] = black
+        image_noise[prob > 1 - amount / 2] = white
+        return image_noise
+    except Exception as e:
+        print(f'Error: {e}')
+
+def add_speckle_noise(
+    image: np.ndarray,
+    distr_width: float = 1.0
+) -> np.ndarray:
+    try:
+        image_noisy = image.copy()
+        uniform_noise = np.random.uniform(-distr_width, distr_width, (image.shape))
+        return np.clip(image_noisy + image_noisy * uniform_noise, 0, 255).astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
