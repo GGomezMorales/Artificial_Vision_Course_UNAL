@@ -6,6 +6,23 @@ import numpy as np
 # cv2.IMREAD_GRAYSCALE : Carga la imagen en escala de grises.
 # cv2.IMREAD_UNCHANGED : Carga la imagen como tal, incluyendo el canal alpha si existe.
 
+
+#  -------------------- UTILS --------------------
+
+def distance(
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int
+) -> float:
+    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+def gaussian(
+    x: float,
+    sigma: float
+) -> float:
+    return (1 / (2 * np.pi * (sigma ** 2))) * np.exp(-(x ** 2) / (2 * sigma ** 2))
+
 #  -------------------- COLOR SPACES --------------------
 
 
@@ -297,8 +314,7 @@ def reflection_transformation(
         elif mode == 'y':
             reflection_matrix = np.float32(
                 [[1, 0, 0],
-                [0, -1, size[0]]
-                ]
+                [0, -1, size[0]]]
             )
         elif mode == 'xy':
             reflection_matrix = np.float32(
@@ -328,7 +344,8 @@ def rotation_transformation(
 def inclination_transformation(
         image: np.ndarray,
         incl_x: float,
-        incl_y: float) -> np.ndarray:
+        incl_y: float
+) -> np.ndarray:
     try:
         size = np.shape(image)
         inclination_matrix = np.float32(
@@ -342,20 +359,23 @@ def inclination_transformation(
 
 def scaling_transformation(
     image: np.ndarray,
-    method: str,
-    scale_x: float,
-    scale_y: float
+    size: tuple = None,
+    scale_x: float = 1.0,
+    scale_y: float = 1.0,
+    method: str = 'linear'
 ) -> np.ndarray:
     try:
-        if method == 'nearest':
-            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_NEAREST)
+        if method == 'linear':
+            return cv2.resize(image.copy(), size, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR)
+        elif method == 'nearest':
+            return cv2.resize(image.copy(), size, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_NEAREST)
         elif method == 'bilinear':
-            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR)
+            return cv2.resize(image.copy(), size, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR)
         elif method == 'bicubic':
-            return cv2.resize(image.copy(), None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_CUBIC)
+            return cv2.resize(image.copy(), size, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_CUBIC)
         else:
             raise ValueError(
-                f'Invalid method. Use "nearest", "bilinear" or "bicubic".')
+                f'Invalid method. Use "nearest", "linear", "bilinear" or "bicubic".')
     except Exception as e:
         print(f'Error: {e}')
 
@@ -435,6 +455,69 @@ def blur_filter(
         print(f'Error: {e}')
 
 
+def median_filter(
+    image: np.ndarray,
+    size: int
+) -> np.ndarray:
+    try:
+        return cv2.medianBlur(image.copy(), size)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def maximum_filter(
+    image: np.ndarray,
+    size: int
+) -> np.ndarray:
+    try:
+        kernel = np.zeros(image.shape, np.uint8)
+        radius = size // 2
+        for i in range(radius, image.shape[0] - radius):
+            for j in range(radius, image.shape[1] - radius):
+                windows = image[i - radius: i + radius + 1, j - radius: j + radius + 1]
+                kernel[i, j] = np.max(windows)
+        return kernel.astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def minimum_filter(
+    image: np.ndarray,
+    size: int
+) -> np.ndarray:
+    try:
+        kernel = np.zeros(image.shape, np.uint8)
+        radius = size // 2
+        for i in range(radius, image.shape[0] - radius):
+            for j in range(radius, image.shape[1] - radius):
+                windows = image[i - radius: i + radius + 1, j - radius: j + radius + 1]
+                kernel[i, j] = np.min(windows)
+        return kernel.astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def bilateral_filter(
+    image: np.ndarray,
+    d: int,
+    sigma_color: float,
+    sigma_space: float
+) -> np.ndarray:
+    try:
+        return cv2.bilateralFilter(image.copy(), d, sigma_color, sigma_space).astype(np.uint8)
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def laplacian_filter(
+    image: np.ndarray,
+    ksize: int
+) -> np.ndarray:
+    try:
+        return cv2.Laplacian(image.copy(), cv2.CV_64F, ksize=ksize)
+    except Exception as e:
+        print(f'Error: {e}')
+
 #  -------------------- BORDER TYPES --------------------
 
 
@@ -508,11 +591,12 @@ def add_salt_and_pepper_noise(
 
 def add_speckle_noise(
     image: np.ndarray,
+    amount: float = 1.0,
     distr_width: float = 1.0
 ) -> np.ndarray:
     try:
         image_noisy = image.copy()
-        uniform_noise = np.random.uniform(-distr_width, distr_width, (image.shape))
+        uniform_noise = np.random.uniform(-distr_width, distr_width, (image.shape)) * amount
         return np.clip(image_noisy + image_noisy * uniform_noise, 0, 255).astype(np.uint8)
     except Exception as e:
         print(f'Error: {e}')
